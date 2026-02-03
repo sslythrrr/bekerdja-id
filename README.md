@@ -1,6 +1,8 @@
 # Bekerdja.id
 
-**Simple Candidate Tracker** - web app where recruiters can manage candidates.
+**Simple Candidate Tracker** - web app where recruiters can manage candidates. 
+
+(https://bekerdja-id-tpa.vercel.app/)
 
 ## Quick Start
 
@@ -85,7 +87,7 @@ This project handles deployment separately for the client (Frontend) and server 
 - **Search & Filter**: Find candidates quickly by name or filter by recruitment status.
 - **Modern & Responsive**: A clean user interface built with Tailwind CSS and Radix UI components.
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 Built with a modern MERN stack for performance and scalability:
 
