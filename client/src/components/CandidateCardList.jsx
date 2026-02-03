@@ -7,16 +7,9 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Pencil, Trash2, Phone, Briefcase, Calendar, ChevronDown } from 'lucide-react';
+import { Pencil, Trash2, Phone, Briefcase, ChevronDown } from 'lucide-react';
 
 export function CandidateCardList({ candidates, onEdit, onDelete, onStatusChange }) {
-    const formatDate = (date) => {
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const year = String(date.getFullYear()).slice(-2);
-        return `${month}/${day}/${year}`;
-    };
-
     return (
         <div className="md:hidden space-y-4">
             {candidates.map((candidate) => (
@@ -25,10 +18,6 @@ export function CandidateCardList({ candidates, onEdit, onDelete, onStatusChange
                         <div className="flex justify-between items-start mb-3">
                             <div className="flex-1">
                                 <h3 className="font-semibold text-lg text-gray-900">{candidate.name}</h3>
-                                <div className="flex items-center gap-1 text-xs text-gray-400 mt-1">
-                                    <Calendar className="h-3 w-3" />
-                                    <span>{formatDate(candidate.createdAt)}</span>
-                                </div>
                             </div>
                         </div>
                         <div className="space-y-2 mb-3">

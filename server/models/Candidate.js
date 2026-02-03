@@ -24,8 +24,7 @@ const CandidateSchema = new mongoose.Schema(
             enum: ["new", "contacted", "interested", "rejected"],
             default: "new",
         },
-    },
-    { timestamps: true }
+    }
 );
 
 export default mongoose.model("Candidate", CandidateSchema);

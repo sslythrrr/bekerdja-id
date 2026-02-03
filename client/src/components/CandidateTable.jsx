@@ -14,16 +14,8 @@ export function CandidateTable({
     onDelete,
     onStatusChange,
     sortField,
-    sortDirection,
     onSort
 }) {
-    const formatDate = (date) => {
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const year = String(date.getFullYear()).slice(-2);
-        return `${month}/${day}/${year}`;
-    };
-
     const SortButton = ({ field, children }) => (
         <button
             onClick={() => onSort(field)}
@@ -39,9 +31,6 @@ export function CandidateTable({
             <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                     <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <SortButton field="createdAt">Date</SortButton>
-                        </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <SortButton field="name">Name</SortButton>
                         </th>
@@ -62,9 +51,6 @@ export function CandidateTable({
                 <tbody className="bg-white divide-y divide-gray-200">
                     {candidates.map((candidate) => (
                         <tr key={candidate.id} className="hover:bg-gray-50 transition-colors">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {formatDate(candidate.createdAt)}
-                            </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                 {candidate.name}
                             </td>

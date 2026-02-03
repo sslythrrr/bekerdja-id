@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { StatsCards } from './components/StatsCards';
 import { CandidateTable } from './components/CandidateTable';
 import { CandidateCardList } from './components/CandidateCardList';
@@ -7,11 +7,12 @@ import { DeleteAlert } from './components/DeleteAlert';
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
-import { mockCandidates } from './data/mockData';
 import { Plus, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 
+const url = "http://localhost:3000/api/candidates";
+
 function App() {
-  const [candidates, setCandidates] = useState(mockCandidates);
+  const [candidates, setCandidates] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -22,23 +23,36 @@ function App() {
     name: '',
   });
 
-  // Sorting state
-  const [sortField, setSortField] = useState('createdAt');
-  const [sortDirection, setSortDirection] = useState('desc');
+  //state
+  const [sortField, setSortField] = useState('name');
+  const [sortDirection, setSortDirection] = useState('asc');
 
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Calculate stats
+  const fetchCandidates = async () => {
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      setCandidates(data);
+    } catch (error) {
+      console.error("Gagal ambil data:", error);
+    }
+  };
+  useEffect(() => {
+    fetchCandidates();
+  }, []);
+
+  // stats
   const stats = useMemo(() => {
     const total = candidates.length;
     const interested = candidates.filter(c => c.status === 'interested').length;
     const contacted = candidates.filter(c => c.status === 'contacted').length;
-    return { total, interested, contacted };
+    const rejected = candidates.filter(c => c.status === 'rejected').length;
+    return { total, interested, contacted, rejected };
   }, [candidates]);
 
-  // Filter and sort candidates
+  // filter
   const filteredAndSortedCandidates = useMemo(() => {
     let filtered = candidates.filter(candidate => {
       const matchesSearch =
@@ -51,18 +65,15 @@ function App() {
       return matchesSearch && matchesStatus;
     });
 
-    // Sort
+    // sort by field
     filtered.sort((a, b) => {
       let aValue = a[sortField];
       let bValue = b[sortField];
 
-      // Handle date sorting
       if (sortField === 'createdAt') {
         aValue = new Date(aValue).getTime();
         bValue = new Date(bValue).getTime();
       }
-
-      // Handle string sorting
       if (typeof aValue === 'string') {
         aValue = aValue.toLowerCase();
         bValue = bValue.toLowerCase();
@@ -78,7 +89,7 @@ function App() {
     return filtered;
   }, [candidates, searchQuery, statusFilter, sortField, sortDirection]);
 
-  // Paginate
+  // paginate
   const totalPages = Math.ceil(filteredAndSortedCandidates.length / itemsPerPage);
   const paginatedCandidates = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -86,7 +97,7 @@ function App() {
     return filteredAndSortedCandidates.slice(startIndex, endIndex);
   }, [filteredAndSortedCandidates, currentPage]);
 
-  // Handle sort
+  // sort
   const handleSort = (field) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -96,36 +107,43 @@ function App() {
     }
   };
 
-  // Handle save (add or edit)
-  const handleSave = (candidateData) => {
-    if (candidateData.id) {
-      // Edit existing
-      setCandidates(prev =>
-        prev.map(c =>
-          c.id === candidateData.id
-            ? { ...candidateData, id: candidateData.id, createdAt: c.createdAt }
-            : c
-        )
-      );
-    } else {
-      // Add new
-      const newCandidate = {
-        ...candidateData,
-        id: Date.now().toString(),
-        createdAt: new Date(),
-      };
-      setCandidates(prev => [...prev, newCandidate]);
+  // create-update
+  const handleSave = async (candidateData) => {
+    try {
+      if (candidateData.id) {
+        // edit existing candidate
+        const res = await fetch(`${url}/${candidateData.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(candidateData),
+        });
+        if (res.ok) fetchCandidates();
+      } else {
+        // add new candidate
+        const newCandidate = {
+          ...candidateData,
+          id: Date.now().toString(),
+        };
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newCandidate),
+        });
+        if (res.ok) fetchCandidates();
+      }
+      setEditingCandidate(undefined);
+    } catch (error) {
+      console.error("Error saving:", error);
     }
-    setEditingCandidate(undefined);
   };
 
-  // Handle edit
+  // edit
   const handleEdit = (candidate) => {
     setEditingCandidate(candidate);
     setIsFormOpen(true);
   };
 
-  // Handle delete
+  // delete
   const handleDelete = (id) => {
     const candidate = candidates.find(c => c.id === id);
     if (candidate) {
@@ -133,43 +151,61 @@ function App() {
     }
   };
 
-  const confirmDelete = () => {
-    setCandidates(prev => prev.filter(c => c.id !== deleteAlert.id));
-    setDeleteAlert({ open: false, id: '', name: '' });
+  // confirm delete
+  const confirmDelete = async () => {
+    try {
+      await fetch(`${url}/${deleteAlert.id}`, {
+        method: "DELETE",
+      });
+      fetchCandidates();
+      setDeleteAlert({ open: false, id: '', name: '' });
+    } catch (error) {
+      console.error("Error deleting:", error);
+    }
   };
 
-  // Handle status change
-  const handleStatusChange = (id, status) => {
-    setCandidates(prev =>
-      prev.map(c => (c.id === id ? { ...c, status } : c))
-    );
+  // status change
+  const handleStatusChange = async (id, status) => {
+    try {
+      // update UI
+      setCandidates(prev =>
+        prev.map(c => (c.id === id ? { ...c, status } : c))
+      );
+      await fetch(`${url}/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+    } catch (error) {
+      console.error("Error update status:", error);
+      fetchCandidates();
+    }
   };
 
-  // Handle add new
+  // add new
   const handleAddNew = () => {
     setEditingCandidate(undefined);
     setIsFormOpen(true);
   };
 
-  // Reset to page 1 when filters change
   useMemo(() => {
     setCurrentPage(1);
   }, [searchQuery, statusFilter]);
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-primary">Candidate Management</h1>
-          <p className="mt-2 text-sm text-gray-600">
-            Manage and track your recruitment candidates
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-primary">Bekerdja.id</h1>
+          <p className="mt-2 text-sm text-accent-800">
+            Candidate Tracker Application
           </p>
         </div>
 
         {/* Stats Section */}
         <div className="mb-6">
-          <StatsCards total={stats.total} interested={stats.interested} contacted={stats.contacted} />
+          <StatsCards total={stats.total} interested={stats.interested} contacted={stats.contacted} rejected={stats.rejected} />
         </div>
 
         {/* Action Bar */}

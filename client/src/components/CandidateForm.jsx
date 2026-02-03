@@ -14,7 +14,7 @@ export function CandidateForm({ open, onOpenChange, candidate, onSave }) {
         status: 'new',
     });
 
-    // Update form when candidate changes
+    // update form
     useEffect(() => {
         if (candidate) {
             setFormData({
@@ -23,7 +23,6 @@ export function CandidateForm({ open, onOpenChange, candidate, onSave }) {
                 position: candidate.position,
                 phone: candidate.phone,
                 status: candidate.status,
-                createdAt: candidate.createdAt,
             });
         } else {
             setFormData({

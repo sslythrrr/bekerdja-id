@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
 
-export function StatsCards({ total, interested, contacted }) {
+export function StatsCards({ total, interested, contacted, rejected }) {
     const [isExpanded, setIsExpanded] = useState(true);
 
     return (
@@ -30,13 +30,21 @@ export function StatsCards({ total, interested, contacted }) {
                 </Button>
             </div>
             {isExpanded && (
-                <div className="grid gap-4 md:grid-cols-3">
+                <div className="grid gap-4 md:grid-cols-4">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Total Candidates</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{total}</div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Contacted</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold text-primary">{contacted}</div>
                         </CardContent>
                     </Card>
                     <Card>
@@ -49,10 +57,10 @@ export function StatsCards({ total, interested, contacted }) {
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Contacted</CardTitle>
+                            <CardTitle className="text-sm font-medium">Rejected</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-primary">{contacted}</div>
+                            <div className="text-2xl font-bold text-red-600">{rejected}</div>
                         </CardContent>
                     </Card>
                 </div>
