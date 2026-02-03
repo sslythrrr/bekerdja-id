@@ -9,7 +9,7 @@ import { Input } from './components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 import { Plus, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 
-const url = "http://localhost:3000/api/candidates";
+const url = import.meta.env.VITE_API_URL || "http://localhost:3000/api/candidates";
 
 function App() {
   const [candidates, setCandidates] = useState([]);

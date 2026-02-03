@@ -20,7 +20,7 @@ npm install
 
 Create a `.env` file inside the `server/` directory and add your database configuration:
 ```env
-uri=mongodb://localhost:27017/bekerdja_db
+mongoApi=mongodb://localhost:27017/bekerdja_db
 PORT=3000
 ```
 
